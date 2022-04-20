@@ -1,0 +1,608 @@
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://netgrif.github.io/petriflow/petriflow.schema.xsd">
+	<id>pipeline_generator</id>
+	<initials>PG</initials>
+	<title>Pipeline Generator</title>
+	<icon>device_hub</icon>
+	<defaultRole>true</defaultRole>
+	<anonymousRole>true</anonymousRole>
+	<transitionRole>false</transitionRole>
+	<data type="text">
+		<id>repository</id>
+		<title>Repository</title>
+		<placeholder>https://github.com/...</placeholder>
+	</data>
+	<data type="enumeration">
+		<id>system</id>
+		<title>System</title>
+		<options>
+			<option key="Jenkins">Jenkins</option>
+			<option key="Gitlab">Gitlab</option>
+		</options>
+	</data>
+	<data type="file">
+		<id>config_file</id>
+		<title>Config file</title>
+	</data>
+	<data type="text">
+		<id>config_string</id>
+		<title>Config string</title>
+	</data>
+	<data type="taskRef">
+		<id>taskRef_0</id>
+		<title>Step</title>
+	</data>
+	<data type="button">
+		<id>button_0</id>
+		<title>Add step</title>
+		<event type="set">
+			<id>button_0_set</id>
+			<actions phase="post">
+				<action id="7">config_string: f.config_string,
+taskRef_0: f.taskRef_0;
+
+def prefix = (useCase.processIdentifier.split("_")[0]) + "_";
+def acase = createCase(prefix+"new_step", "New step");
+def atask = findTask({ it.caseId.eq(useCase.stringId) });
+setData("t1", acase, [
+    "parent_id": [
+        "value": useCase.stringId,
+        "type": "text" 
+    ],
+    "parent_transition_id": [
+        "value": atask.transitionId,
+        "type": "text"
+    ]
+]);
+
+change taskRef_0 value { 
+    def list = taskRef_0.value + [findTask({ it.caseId.eq(acase.stringId) &amp; it.transitionId.eq("t1") })?.stringId]
+    return list - null; 
+}</action>
+			</actions>
+		</event>
+	</data>
+	<transition>
+		<id>t1</id>
+		<x>300</x>
+		<y>300</y>
+		<label>choose repo, system</label>
+		<dataGroup>
+			<id>t1_0</id>
+			<cols>4</cols>
+			<layout>grid</layout>
+			<dataRef>
+				<id>system</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>repository</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+	</transition>
+	<transition>
+		<id>t2</id>
+		<x>580</x>
+		<y>300</y>
+		<label>build steps</label>
+		<dataGroup>
+			<id>t2_0</id>
+			<cols>4</cols>
+			<layout>grid</layout>
+			<dataRef>
+				<id>config_string</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>2</rows>
+					<cols>4</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>taskRef_0</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>2</rows>
+					<cols>4</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>button_0</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>4</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+		<event type="finish">
+			<id>t2_finish</id>
+			<actions phase="post">
+				<action id="1">taskRef_0: f.taskRef_0,
+config_string: f.config_string;
+def resultMap = [build: []];
+String s = "";
+def cases = [];
+taskRef_0.value.each { taskId -&gt;
+    def atask = findTask({ it._id.eq(taskId) });
+    def acase = findCase({ it._id.eq(atask.caseId) });
+    cases &lt;&lt; acase;
+    resultMap["build"] &lt;&lt; acase.getFieldValue("text_0");
+}
+
+for (int i = 0; i &lt; resultMap["build"].size(); i++) {
+    s += resultMap["build"][i] + ", ";
+}
+
+cache "resultMap", resultMap;
+
+change config_string value { s; }
+change taskRef_0 value { []; }
+
+async.run {
+    cases.each {c -&gt; workflowService.deleteCase(c.stringId);}
+}</action>
+			</actions>
+		</event>
+		<event type="assign">
+			<id>t2_assign</id>
+		</event>
+		<event type="cancel">
+			<id>t2_cancel</id>
+		</event>
+		<event type="delegate">
+			<id>t2_delegate</id>
+		</event>
+	</transition>
+	<transition>
+		<id>t3</id>
+		<x>860</x>
+		<y>300</y>
+		<label>test steps</label>
+		<dataGroup>
+			<id>t3_0</id>
+			<cols>4</cols>
+			<layout>grid</layout>
+			<dataRef>
+				<id>config_string</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>2</rows>
+					<cols>4</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>taskRef_0</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>2</rows>
+					<cols>4</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>button_0</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>4</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+		<event type="finish">
+			<id>t3_finish</id>
+			<actions phase="post">
+				<action id="2">taskRef_0: f.taskRef_0,
+config_string: f.config_string;
+def resultMap = cache "resultMap";
+resultMap["test"] = [];
+String s = config_string.value;
+def cases = [];
+taskRef_0.value.each { taskId -&gt;
+    def atask = findTask({ it._id.eq(taskId) });
+    def acase = findCase({ it._id.eq(atask.caseId) });
+    cases &lt;&lt; acase;
+    resultMap["test"] &lt;&lt; acase.getFieldValue("text_0");
+}
+
+for (int i = 0; i &lt; resultMap["test"].size(); i++) {
+    s += resultMap["test"][i] + ", ";
+}
+
+cache "resultMap", resultMap;
+
+change config_string value { s; }
+change taskRef_0 value { []; }
+
+async.run {
+    cases.each {c -&gt; workflowService.deleteCase(c.stringId);}
+}</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>t4</id>
+		<x>1140</x>
+		<y>300</y>
+		<label>deploy steps</label>
+		<dataGroup>
+			<id>t4_0</id>
+			<cols>4</cols>
+			<layout>grid</layout>
+			<dataRef>
+				<id>config_string</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>2</rows>
+					<cols>4</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>taskRef_0</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>2</rows>
+					<cols>4</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>button_0</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>4</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+		<event type="finish">
+			<id>t4_finish</id>
+			<actions phase="post">
+				<action id="3">taskRef_0: f.taskRef_0,
+config_string: f.config_string;
+def resultMap = cache "resultMap";
+resultMap["deploy"] = [];
+String s = config_string.value;
+def cases = [];
+taskRef_0.value.each { taskId -&gt;
+    def atask = findTask({ it._id.eq(taskId) });
+    def acase = findCase({ it._id.eq(atask.caseId) });
+    cases &lt;&lt; acase;
+    resultMap["deploy"] &lt;&lt; acase.getFieldValue("text_0");
+}
+
+for (int i = 0; i &lt; resultMap["deploy"].size(); i++) {
+    s += resultMap["deploy"][i] + ", ";
+}
+
+cache "resultMap", resultMap;
+
+change config_string value { s; }
+change taskRef_0 value { []; }
+
+async.run {
+    cases.each {c -&gt; workflowService.deleteCase(c.stringId);}
+}</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>t5</id>
+		<x>1380</x>
+		<y>300</y>
+		<label>see file</label>
+		<dataGroup>
+			<id>t5_0</id>
+			<cols>4</cols>
+			<layout>grid</layout>
+			<dataRef>
+				<id>config_string</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>2</rows>
+					<cols>4</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>config_file</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+		<event type="assign">
+			<id>t5_assign</id>
+			<actions phase="pre">
+				<action id="4">config_string: f.config_string,
+config_file: f.config_file;
+
+File file = new File('./storage/Jenkinsfile').withWriter('utf-8') { writer -&gt; 
+    writer.writeLine config_string.value
+};
+def fileValue = new com.netgrif.application.engine.petrinet.domain.dataset.FileFieldValue('Jenkinsfile', './storage/Jenkinsfile')
+
+change config_file value { fileValue }</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>t6</id>
+		<x>740</x>
+		<y>460</y>
+		<label>see file</label>
+		<dataGroup>
+			<id>t6_0</id>
+			<cols>4</cols>
+			<layout>grid</layout>
+			<dataRef>
+				<id>config_file</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+		<event type="assign">
+			<id>t6_assign</id>
+			<actions phase="pre">
+				<action id="5">config_string: f.config_string,
+config_file: f.config_file;
+
+File file = new File('./storage/Jenkinsfile').withWriter('utf-8') { writer -&gt; 
+    writer.writeLine config_string.value
+};
+def fileValue = new com.netgrif.application.engine.petrinet.domain.dataset.FileFieldValue('Jenkinsfile', './storage/Jenkinsfile')
+
+change config_file value { fileValue }</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>t7</id>
+		<x>1020</x>
+		<y>460</y>
+		<label>see file</label>
+		<dataGroup>
+			<id>t7_0</id>
+			<cols>4</cols>
+			<layout>grid</layout>
+			<dataRef>
+				<id>config_file</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+		<event type="assign">
+			<id>t7_assign</id>
+			<actions phase="pre">
+				<action id="6">config_string: f.config_string,
+config_file: f.config_file;
+
+File file = new File('./storage/Jenkinsfile').withWriter('utf-8') { writer -&gt; 
+    writer.writeLine config_string.value
+};
+def fileValue = new com.netgrif.application.engine.petrinet.domain.dataset.FileFieldValue('Jenkinsfile', './storage/Jenkinsfile')
+
+change config_file value { fileValue }</action>
+			</actions>
+		</event>
+	</transition>
+	<place>
+		<id>p1</id>
+		<x>100</x>
+		<y>300</y>
+		<label>start</label>
+		<tokens>1</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>p2</id>
+		<x>460</x>
+		<y>300</y>
+		<label>chosen repo, system</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>p3</id>
+		<x>740</x>
+		<y>300</y>
+		<label>build steps done</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>p4</id>
+		<x>1020</x>
+		<y>300</y>
+		<label>test steps done</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>p5</id>
+		<x>1260</x>
+		<y>300</y>
+		<label>config file done</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<arc>
+		<id>a1</id>
+		<type>regular</type>
+		<sourceId>p1</sourceId>
+		<destinationId>t1</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>a2</id>
+		<type>regular</type>
+		<sourceId>t1</sourceId>
+		<destinationId>p2</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>a3</id>
+		<type>regular</type>
+		<sourceId>p2</sourceId>
+		<destinationId>t2</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>a4</id>
+		<type>regular</type>
+		<sourceId>t2</sourceId>
+		<destinationId>p3</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>a5</id>
+		<type>regular</type>
+		<sourceId>p3</sourceId>
+		<destinationId>t3</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>a6</id>
+		<type>regular</type>
+		<sourceId>t3</sourceId>
+		<destinationId>p4</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>a7</id>
+		<type>regular</type>
+		<sourceId>p4</sourceId>
+		<destinationId>t4</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>a8</id>
+		<type>regular</type>
+		<sourceId>t4</sourceId>
+		<destinationId>p5</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>a15</id>
+		<type>read</type>
+		<sourceId>p4</sourceId>
+		<destinationId>t7</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>a17</id>
+		<type>read</type>
+		<sourceId>p5</sourceId>
+		<destinationId>t5</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>a18</id>
+		<type>read</type>
+		<sourceId>p3</sourceId>
+		<destinationId>t6</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+</document>
