@@ -398,13 +398,106 @@ async.run {
 		<event type="assign">
 			<id>t5_assign</id>
 			<actions phase="pre">
-				<action id="4">config_string: f.config_string,
+				<action id="4">system: f.system,
+config_string: f.config_string,
 config_file: f.config_file;
 
-File file = new File('./storage/Jenkinsfile').withWriter('utf-8') { writer -&gt; 
-    writer.writeLine config_string.value
+def resultMap = cache "resultMap";
+
+def resultString = "";
+def fileName = "";
+
+if (system.value == "Jenkins") {
+
+    fileName = "Jenkinsfile"
+    def buildSteps = "";
+    resultMap.build.each { step -&gt; 
+        buildSteps += /sh '${step}'
+                /;
+    }
+
+    def testSteps = "";
+    resultMap.test.each { step -&gt; 
+        testSteps += /sh '${step}'
+                /;
+    }
+
+    def deploySteps = "";
+    resultMap.deploy.each { step -&gt; 
+        deploySteps += /sh '${step}'
+                /;
+    }
+
+    resultString = /pipeline {
+    agent any
+    stages {
+        stage('build') {
+            steps {
+                ${buildSteps}
+            }
+        }
+        stage('test') {
+            steps {
+                ${testSteps}
+            }
+        }
+        stage('deploy') {
+            steps {
+                ${deploySteps}
+            }
+        }
+    }
+}
+/
+
+} else if (system.value == "Gitlab") {
+    fileName = ".gitlab-ci.yml"
+
+    def buildSteps = "";
+    resultMap.build.each { step -&gt; 
+        buildSteps += /- ${step}
+    /;
+    }
+
+    def testSteps = "";
+    resultMap.test.each { step -&gt; 
+        testSteps += /- ${step}
+    /;
+    }
+
+    def deploySteps = "";
+    resultMap.deploy.each { step -&gt; 
+        deploySteps += /- ${step}
+    /;
+    }
+
+    resultString = /stages:
+  - build
+  - test
+  - deploy
+
+build:
+  stage: build
+  script:
+    ${buildSteps}
+
+test:
+  stage: test
+  script:
+    ${testSteps}
+
+deploy:
+  stage: deploy
+  script:
+    ${deploySteps}
+/
+}
+
+
+File file = new File("./storage/${fileName}").withWriter('utf-8') { writer -&gt; 
+    writer.writeLine resultString
 };
-def fileValue = new com.netgrif.application.engine.petrinet.domain.dataset.FileFieldValue('Jenkinsfile', './storage/Jenkinsfile')
+def fileValue = new com.netgrif.application.engine.petrinet.domain.dataset.FileFieldValue(fileName, "./storage/${fileName}")
 
 change config_file value { fileValue }</action>
 			</actions>
