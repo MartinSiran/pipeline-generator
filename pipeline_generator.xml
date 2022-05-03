@@ -6,11 +6,6 @@
 	<defaultRole>true</defaultRole>
 	<anonymousRole>true</anonymousRole>
 	<transitionRole>false</transitionRole>
-	<data type="text">
-		<id>repository</id>
-		<title>Repository</title>
-		<placeholder>https://github.com/...</placeholder>
-	</data>
 	<data type="enumeration">
 		<id>system</id>
 		<title>System</title>
@@ -23,10 +18,6 @@
 		<id>config_file</id>
 		<title>Config file</title>
 	</data>
-	<data type="text">
-		<id>config_string</id>
-		<title>Config string</title>
-	</data>
 	<data type="taskRef">
 		<id>taskRef_0</id>
 		<title>Step</title>
@@ -37,8 +28,7 @@
 		<event type="set">
 			<id>button_0_set</id>
 			<actions phase="post">
-				<action id="7">config_string: f.config_string,
-taskRef_0: f.taskRef_0;
+				<action id="7">taskRef_0: f.taskRef_0;
 
 def prefix = (useCase.processIdentifier.split("_")[0]) + "_";
 def acase = createCase(prefix+"new_step", "New step");
@@ -65,7 +55,7 @@ change taskRef_0 value {
 		<id>t1</id>
 		<x>300</x>
 		<y>300</y>
-		<label>choose repo, system</label>
+		<label>choose system</label>
 		<dataGroup>
 			<id>t1_0</id>
 			<cols>4</cols>
@@ -84,21 +74,19 @@ change taskRef_0 value {
 					<appearance>outline</appearance>
 				</layout>
 			</dataRef>
-			<dataRef>
-				<id>repository</id>
-				<logic>
-					<behavior>editable</behavior>
-				</logic>
-				<layout>
-					<x>0</x>
-					<y>1</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
-			</dataRef>
 		</dataGroup>
+		<event type="assign">
+			<id>t1_assign</id>
+		</event>
+		<event type="finish">
+			<id>t1_finish</id>
+		</event>
+		<event type="cancel">
+			<id>t1_cancel</id>
+		</event>
+		<event type="delegate">
+			<id>t1_delegate</id>
+		</event>
 	</transition>
 	<transition>
 		<id>t2</id>
@@ -109,20 +97,6 @@ change taskRef_0 value {
 			<id>t2_0</id>
 			<cols>4</cols>
 			<layout>grid</layout>
-			<dataRef>
-				<id>config_string</id>
-				<logic>
-					<behavior>visible</behavior>
-				</logic>
-				<layout>
-					<x>0</x>
-					<y>0</y>
-					<rows>2</rows>
-					<cols>4</cols>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
-			</dataRef>
 			<dataRef>
 				<id>taskRef_0</id>
 				<logic>
@@ -155,10 +129,8 @@ change taskRef_0 value {
 		<event type="finish">
 			<id>t2_finish</id>
 			<actions phase="post">
-				<action id="1">taskRef_0: f.taskRef_0,
-config_string: f.config_string;
+				<action id="1">taskRef_0: f.taskRef_0;
 def resultMap = [build: []];
-String s = "";
 def cases = [];
 taskRef_0.value.each { taskId -&gt;
     def atask = findTask({ it._id.eq(taskId) });
@@ -167,13 +139,7 @@ taskRef_0.value.each { taskId -&gt;
     resultMap["build"] &lt;&lt; acase.getFieldValue("text_0");
 }
 
-for (int i = 0; i &lt; resultMap["build"].size(); i++) {
-    s += resultMap["build"][i] + ", ";
-}
-
 cache "resultMap", resultMap;
-
-change config_string value { s; }
 change taskRef_0 value { []; }
 
 async.run {
@@ -200,20 +166,6 @@ async.run {
 			<id>t3_0</id>
 			<cols>4</cols>
 			<layout>grid</layout>
-			<dataRef>
-				<id>config_string</id>
-				<logic>
-					<behavior>visible</behavior>
-				</logic>
-				<layout>
-					<x>0</x>
-					<y>0</y>
-					<rows>2</rows>
-					<cols>4</cols>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
-			</dataRef>
 			<dataRef>
 				<id>taskRef_0</id>
 				<logic>
@@ -246,11 +198,9 @@ async.run {
 		<event type="finish">
 			<id>t3_finish</id>
 			<actions phase="post">
-				<action id="2">taskRef_0: f.taskRef_0,
-config_string: f.config_string;
+				<action id="2">taskRef_0: f.taskRef_0;
 def resultMap = cache "resultMap";
 resultMap["test"] = [];
-String s = config_string.value;
 def cases = [];
 taskRef_0.value.each { taskId -&gt;
     def atask = findTask({ it._id.eq(taskId) });
@@ -259,13 +209,7 @@ taskRef_0.value.each { taskId -&gt;
     resultMap["test"] &lt;&lt; acase.getFieldValue("text_0");
 }
 
-for (int i = 0; i &lt; resultMap["test"].size(); i++) {
-    s += resultMap["test"][i] + ", ";
-}
-
 cache "resultMap", resultMap;
-
-change config_string value { s; }
 change taskRef_0 value { []; }
 
 async.run {
@@ -283,20 +227,6 @@ async.run {
 			<id>t4_0</id>
 			<cols>4</cols>
 			<layout>grid</layout>
-			<dataRef>
-				<id>config_string</id>
-				<logic>
-					<behavior>editable</behavior>
-				</logic>
-				<layout>
-					<x>0</x>
-					<y>0</y>
-					<rows>2</rows>
-					<cols>4</cols>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
-			</dataRef>
 			<dataRef>
 				<id>taskRef_0</id>
 				<logic>
@@ -329,11 +259,9 @@ async.run {
 		<event type="finish">
 			<id>t4_finish</id>
 			<actions phase="post">
-				<action id="3">taskRef_0: f.taskRef_0,
-config_string: f.config_string;
+				<action id="3">taskRef_0: f.taskRef_0;
 def resultMap = cache "resultMap";
 resultMap["deploy"] = [];
-String s = config_string.value;
 def cases = [];
 taskRef_0.value.each { taskId -&gt;
     def atask = findTask({ it._id.eq(taskId) });
@@ -342,13 +270,7 @@ taskRef_0.value.each { taskId -&gt;
     resultMap["deploy"] &lt;&lt; acase.getFieldValue("text_0");
 }
 
-for (int i = 0; i &lt; resultMap["deploy"].size(); i++) {
-    s += resultMap["deploy"][i] + ", ";
-}
-
 cache "resultMap", resultMap;
-
-change config_string value { s; }
 change taskRef_0 value { []; }
 
 async.run {
@@ -366,20 +288,6 @@ async.run {
 			<id>t5_0</id>
 			<cols>4</cols>
 			<layout>grid</layout>
-			<dataRef>
-				<id>config_string</id>
-				<logic>
-					<behavior>visible</behavior>
-				</logic>
-				<layout>
-					<x>0</x>
-					<y>0</y>
-					<rows>2</rows>
-					<cols>4</cols>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
-			</dataRef>
 			<dataRef>
 				<id>config_file</id>
 				<logic>
@@ -399,7 +307,6 @@ async.run {
 			<id>t5_assign</id>
 			<actions phase="pre">
 				<action id="4">system: f.system,
-config_string: f.config_string,
 config_file: f.config_file;
 
 def resultMap = cache "resultMap";
@@ -493,89 +400,13 @@ deploy:
 /
 }
 
+cacheFree "resultMap";
+
 
 File file = new File("./storage/${fileName}").withWriter('utf-8') { writer -&gt; 
     writer.writeLine resultString
 };
 def fileValue = new com.netgrif.application.engine.petrinet.domain.dataset.FileFieldValue(fileName, "./storage/${fileName}")
-
-change config_file value { fileValue }</action>
-			</actions>
-		</event>
-	</transition>
-	<transition>
-		<id>t6</id>
-		<x>740</x>
-		<y>460</y>
-		<label>see file</label>
-		<dataGroup>
-			<id>t6_0</id>
-			<cols>4</cols>
-			<layout>grid</layout>
-			<dataRef>
-				<id>config_file</id>
-				<logic>
-					<behavior>visible</behavior>
-				</logic>
-				<layout>
-					<x>0</x>
-					<y>0</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
-			</dataRef>
-		</dataGroup>
-		<event type="assign">
-			<id>t6_assign</id>
-			<actions phase="pre">
-				<action id="5">config_string: f.config_string,
-config_file: f.config_file;
-
-File file = new File('./storage/Jenkinsfile').withWriter('utf-8') { writer -&gt; 
-    writer.writeLine config_string.value
-};
-def fileValue = new com.netgrif.application.engine.petrinet.domain.dataset.FileFieldValue('Jenkinsfile', './storage/Jenkinsfile')
-
-change config_file value { fileValue }</action>
-			</actions>
-		</event>
-	</transition>
-	<transition>
-		<id>t7</id>
-		<x>1020</x>
-		<y>460</y>
-		<label>see file</label>
-		<dataGroup>
-			<id>t7_0</id>
-			<cols>4</cols>
-			<layout>grid</layout>
-			<dataRef>
-				<id>config_file</id>
-				<logic>
-					<behavior>visible</behavior>
-				</logic>
-				<layout>
-					<x>0</x>
-					<y>0</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
-			</dataRef>
-		</dataGroup>
-		<event type="assign">
-			<id>t7_assign</id>
-			<actions phase="pre">
-				<action id="6">config_string: f.config_string,
-config_file: f.config_file;
-
-File file = new File('./storage/Jenkinsfile').withWriter('utf-8') { writer -&gt; 
-    writer.writeLine config_string.value
-};
-def fileValue = new com.netgrif.application.engine.petrinet.domain.dataset.FileFieldValue('Jenkinsfile', './storage/Jenkinsfile')
 
 change config_file value { fileValue }</action>
 			</actions>
@@ -593,7 +424,7 @@ change config_file value { fileValue }</action>
 		<id>p2</id>
 		<x>460</x>
 		<y>300</y>
-		<label>chosen repo, system</label>
+		<label>chosen system</label>
 		<tokens>0</tokens>
 		<static>false</static>
 	</place>
@@ -678,24 +509,10 @@ change config_file value { fileValue }</action>
 		<multiplicity>1</multiplicity>
 	</arc>
 	<arc>
-		<id>a15</id>
-		<type>read</type>
-		<sourceId>p4</sourceId>
-		<destinationId>t7</destinationId>
-		<multiplicity>1</multiplicity>
-	</arc>
-	<arc>
 		<id>a17</id>
 		<type>read</type>
 		<sourceId>p5</sourceId>
 		<destinationId>t5</destinationId>
-		<multiplicity>1</multiplicity>
-	</arc>
-	<arc>
-		<id>a18</id>
-		<type>read</type>
-		<sourceId>p3</sourceId>
-		<destinationId>t6</destinationId>
 		<multiplicity>1</multiplicity>
 	</arc>
 </document>
