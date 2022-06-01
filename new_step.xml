@@ -1,4 +1,4 @@
-<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://netgrif.github.io/petriflow/petriflow.schema.xsd">
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://petriflow.com/petriflow.schema.xsd">
 	<id>new_step</id>
 	<initials>NS</initials>
 	<title>New Step</title>
@@ -83,12 +83,12 @@ async.run {
 				</event>
 			</dataRef>
 			<dataRef>
-				<id>parent_id</id>
+				<id>parent_transition_id</id>
 				<logic>
-					<behavior>forbidden</behavior>
+					<behavior>hidden</behavior>
 				</logic>
 				<layout>
-					<x>0</x>
+					<x>1</x>
 					<y>1</y>
 					<rows>1</rows>
 					<cols>1</cols>
@@ -97,12 +97,12 @@ async.run {
 				</layout>
 			</dataRef>
 			<dataRef>
-				<id>parent_transition_id</id>
+				<id>parent_id</id>
 				<logic>
-					<behavior>forbidden</behavior>
+					<behavior>hidden</behavior>
 				</logic>
 				<layout>
-					<x>1</x>
+					<x>0</x>
 					<y>1</y>
 					<rows>1</rows>
 					<cols>1</cols>
@@ -116,6 +116,12 @@ async.run {
 		</event>
 		<event type="finish">
 			<id>t1_finish</id>
+		</event>
+		<event type="cancel">
+			<id>t1_cancel</id>
+		</event>
+		<event type="delegate">
+			<id>t1_delegate</id>
 		</event>
 	</transition>
 </document>
