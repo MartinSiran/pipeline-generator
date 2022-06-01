@@ -319,42 +319,51 @@ def fileName = "";
 if (system.value == "Jenkins") {
 
     fileName = "Jenkinsfile"
-    def buildSteps = "";
-    resultMap.build.each { step -&gt; 
-        buildSteps += /sh '${step}'
-                /;
+    def buildStage = "";
+    if (resultMap.build.size &gt; 0) {
+        buildStage = /stage('build') {
+            steps {/;
+        resultMap.build.each { step -&gt;
+        buildStage += /
+                sh '${step}'/;
+    }
+    buildStage += /
+            }
+        }/
     }
 
-    def testSteps = "";
-    resultMap.test.each { step -&gt; 
-        testSteps += /sh '${step}'
-                /;
+    def testStage = "";
+    if (resultMap.test.size &gt; 0) {
+        testStage = /stage('test') {
+            steps {/;
+        resultMap.test.each { step -&gt;
+        testStage += /
+                sh '${step}'/;
+    }
+    testStage += /
+            }
+        }/
     }
 
-    def deploySteps = "";
-    resultMap.deploy.each { step -&gt; 
-        deploySteps += /sh '${step}'
-                /;
+    def deployStage = "";
+    if (resultMap.deploy.size &gt; 0) {
+        deployStage = /stage('deploy') {
+            steps {/;
+        resultMap.deploy.each { step -&gt;
+        deployStage += /
+                sh '${step}'/;
+    }
+    deployStage += /
+            }
+        }/
     }
 
     resultString = /pipeline {
     agent any
     stages {
-        stage('build') {
-            steps {
-                ${buildSteps}
-            }
-        }
-        stage('test') {
-            steps {
-                ${testSteps}
-            }
-        }
-        stage('deploy') {
-            steps {
-                ${deploySteps}
-            }
-        }
+        ${buildStage}
+        ${testStage}
+        ${deployStage}
     }
 }
 /
@@ -412,6 +421,15 @@ def fileValue = new com.netgrif.application.engine.petrinet.domain.dataset.FileF
 
 change config_file value { fileValue }</action>
 			</actions>
+		</event>
+		<event type="finish">
+			<id>t5_finish</id>
+		</event>
+		<event type="cancel">
+			<id>t5_cancel</id>
+		</event>
+		<event type="delegate">
+			<id>t5_delegate</id>
 		</event>
 	</transition>
 	<place>
