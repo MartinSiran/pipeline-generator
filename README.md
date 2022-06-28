@@ -105,13 +105,12 @@ $ # alternatively docker-compose up
 13. Head to [demo petriflow engine](https://demo.netgrif.com/) (register or sign in)
 14. In demo petriflow engine, left menu -> `Processes` -> Upload file button -> upload both `.xml` files
 15. In demo petriflow engine, left menu -> `All Cases` -> Add new case (plus button) -> choose `Pipeline Generator` and create
-16. In demo petriflow engine, choose system `Jenkins`
+16. In demo petriflow engine, choose system `Jenkins` and fill Jenkins agent field with `docker { image 'maven:3.8.4-openjdk-11-slim' }`
 17. In demo petriflow engine, `assign` task `build steps` and `Add step`, fill in value `mvn clean compile`
-17. In demo petriflow engine, `assign` task `test steps` and `Add step`, fill in value `mvn test`
-18. In demo petriflow engine, `assign` task `deploy steps` and `Add step`, fill in value `mvn compile exec:java -Dexec.mainClass="org.example.App"`
-19. In demo petriflow engine, `assign` task `get file`, download `Jenkinsfile`
-20. Update downloaded `Jenkinsfile` -> replace `agent any` for `agent { docker { image 'maven:3.8.4-openjdk-11-slim' } }`
-- final Jenkinsfile should look like
+18. In demo petriflow engine, `assign` task `test steps` and `Add step`, fill in value `mvn test`
+19. In demo petriflow engine, `assign` task `deploy steps` and `Add step`, fill in value `mvn compile exec:java -Dexec.mainClass="org.example.App"`
+20. In demo petriflow engine, `assign` task `get file`, download `Jenkinsfile`
+21. final Jenkinsfile should look like
 ```
 pipeline {
     agent { docker { image 'maven:3.8.4-openjdk-11-slim' } }
@@ -134,6 +133,6 @@ pipeline {
     }
 }
 ```
-21. Add updated `Jenkinsfile` to forked repository `example-java-project` to branches `test-success` & `test-error`
-22. In Jenkins, open configured project from dashboard, click `Build Now` twice
-23. In Jenkins, one pipeline passed, second failed
+22. Add updated `Jenkinsfile` to forked repository `example-java-project` to branches `test-success` & `test-error`
+23. In Jenkins, open configured project from dashboard, click `Build Now` twice
+24. In Jenkins, one pipeline passed, second failed
